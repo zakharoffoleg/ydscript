@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
-import requests, json
-from requests.exceptions import ConnectionError
 from time import sleep
+
+import json
+import re
+import requests
 import sys
+from openpyxl import Workbook
 
 if sys.version_info < (3,):
     def u(x):
@@ -27,11 +30,11 @@ class Account(object):
         self.token = token
         self.login = login
 
-    campaignlist = []
+    campaignList = []
     CampaignsURL = 'https://api-sandbox.direct.yandex.com/json/v5/campaigns'
     ReportsURL = 'https://api-sandbox.direct.yandex.com/json/v5/reports'
 
-    def getcampaigns(self):
+    def getCampaigns(self):
         headers = {"Authorization": "Bearer " + self.token,
                    "Client-Login": self.login,
                    "Accept-Language": "ru",
@@ -52,7 +55,6 @@ class Account(object):
             #print("Запрос: {}".format(u(result.request.body)))
             #print("Заголовки ответа: {}".format(result.headers))
             #print("Ответ: {}".format(u(result.text)))
-            #print("\n")
 
             # Обработка запроса
             if result.status_code != 200 or result.json().get("error", False):
@@ -65,13 +67,12 @@ class Account(object):
                 print("Информация о баллах: {}".format(result.headers.get("Units", False)))
 
                 for campaign in result.json()["result"]["Campaigns"]:
-                    self.campaignlist.append(str(campaign['Id']))
+                    self.campaignList.append(str(campaign['Id']))
                     print("Рекламная кампания: {} №{}".format(u(campaign['Name']), campaign['Id']))
 
                 if result.json()['result'].get('LimitedBy', False):
                     print("Получены не все доступные объекты.")
-            print(self.campaignlist)
-
+            print(self.campaignList)
 
         except ConnectionError:
             print("Произошла ошибка соединения с сервером API.")
@@ -79,9 +80,10 @@ class Account(object):
         except:
             print("Произошла непредвиденная ошибка.")
 
-    def getcosts(self):
-        if self.campaignlist:
-            for i in self.campaignlist:
+    def getCosts(self):
+        if self.campaignList:
+            self.campaignCosts = {}
+            for i in self.campaignList:
                 print(i)
                 headers = {
                     "Authorization": "Bearer " + self.token,
@@ -111,8 +113,8 @@ class Account(object):
                         },
                         "FieldNames": [
                             #"Date",
-                            "CampaignName",
                             "CampaignId",
+                            "CampaignName",
                             #"LocationOfPresenceName",
                             #"Impressions",
                             #"Clicks",
@@ -145,8 +147,9 @@ class Account(object):
                             break
                         elif req.status_code == 200:
                             print("Отчет создан успешно")
-                            print("RequestId: {}".format(req.headers.get("RequestId", False)))
-                            print("Содержание отчета: \n{}".format(u(req.text)))
+                            # print("RequestId: {}".format(req.headers.get("RequestId", False)))
+                            # print("Содержание отчета: \n{}".format(u(req.text)))
+                            self.campaignCosts.update({i: req.text})
                             break
                         elif req.status_code == 201:
                             print("Отчет успешно поставлен в очередь в режиме офлайн")
@@ -180,23 +183,49 @@ class Account(object):
                             break
 
                     # Обработка ошибки, если не удалось соединиться с сервером API Директа
-                    except ConnectionError:
+                    except requests.exceptions.ConnectionError:
                         # В данном случае мы рекомендуем повторить запрос позднее
                         print("Произошла ошибка соединения с сервером API")
                         # Принудительный выход из цикла
                         break
 
                     # Если возникла какая-либо другая ошибка
-                    except:
+                    except requests.exceptions.RequestException as e:
                         # В данном случае мы рекомендуем проанализировать действия приложения
+                        print(e)
                         print("Произошла непредвиденная ошибка")
                         # Принудительный выход из цикла
                         break
+            print(self.campaignCosts)
         else:
             print("Список кампаний пуст!")
+
+    def exportToExcel(self):
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Отчёт YD"
+
+        for i in self.campaignCosts.items():
+            rows = [a.start() for a in list(re.finditer('\n', i[1]))]
+            cols = [a.start() for a in list(re.finditer('\t', i[1]))]
+            print(rows)
+            print(cols)
+            if rows and cols:
+                for n in range(len(rows) + len(cols) - 2):
+                    if rows[0] < cols[0]:
+                        rows.pop(0)
+                    else:
+                        cols.pop(0)
+                    print(rows)
+                    print(cols)
+            else:
+                print("Нет списка расходов по кампаниям!")
+
+        #wb.save(filename="asdkljbl.xslx")
 
 
 User = Account(token, login)
 
-User.getcampaigns()
-User.getcosts()
+User.getCampaigns()
+User.getCosts()
+User.exportToExcel()
