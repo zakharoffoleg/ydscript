@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-from time import sleep
-
+import collections
 import json
 import re
-import requests
 import sys
+from time import sleep
+
+import requests
 from openpyxl import Workbook
 
 if sys.version_info < (3,):
@@ -72,7 +73,6 @@ class Account(object):
 
                 if result.json()['result'].get('LimitedBy', False):
                     print("Получены не все доступные объекты.")
-            print(self.campaignList)
 
         except ConnectionError:
             print("Произошла ошибка соединения с сервером API.")
@@ -84,7 +84,6 @@ class Account(object):
         if self.campaignList:
             self.campaignCosts = {}
             for i in self.campaignList:
-                print(i)
                 headers = {
                     "Authorization": "Bearer " + self.token,
                     "Client-Login": self.login,
@@ -100,7 +99,7 @@ class Account(object):
                     # "skipReportSummary": "true"
                 }
 
-                body = {
+                self.costsBody = {
                     "params": {
                         "SelectionCriteria": {
                             "DateFrom": "2019-07-22",
@@ -130,7 +129,7 @@ class Account(object):
                 }
 
                 # Кодирование тела запроса в JSON
-                body = json.dumps(body, indent=4)
+                body = json.dumps(self.costsBody, indent=4)
 
                 # --- Запуск цикла для выполнения запросов ---
                 # Если получен HTTP-код 200, то выводится содержание отчета
@@ -146,10 +145,10 @@ class Account(object):
                             print("JSON-код ответа сервера: \n{}".format(u(req.json())))
                             break
                         elif req.status_code == 200:
-                            print("Отчет создан успешно")
                             # print("RequestId: {}".format(req.headers.get("RequestId", False)))
                             # print("Содержание отчета: \n{}".format(u(req.text)))
                             self.campaignCosts.update({i: req.text})
+                            print("Данные о расходах кампании %s получены" % i)
                             break
                         elif req.status_code == 201:
                             print("Отчет успешно поставлен в очередь в режиме офлайн")
@@ -164,13 +163,15 @@ class Account(object):
                             print("RequestId:  {}".format(req.headers.get("RequestId", False)))
                             sleep(retryIn)
                         elif req.status_code == 500:
-                            print("При формировании отчета произошла ошибка. Пожалуйста, попробуйте повторить запрос позднее")
+                            print("При формировании отчета произошла ошибка. Пожалуйста, попробуйте повторить запрос "
+                                  "позднее")
                             print("RequestId: {}".format(req.headers.get("RequestId", False)))
                             print("JSON-код ответа сервера: \n{}".format(u(req.json())))
                             break
                         elif req.status_code == 502:
                             print("Время формирования отчета превысило серверное ограничение.")
-                            print("Пожалуйста, попробуйте изменить параметры запроса - уменьшить период и количество запрашиваемых данных.")
+                            print("Пожалуйста, попробуйте изменить параметры запроса - уменьшить период и количество "
+                                  "запрашиваемых данных.")
                             print("JSON-код запроса: {}".format(body))
                             print("RequestId: {}".format(req.headers.get("RequestId", False)))
                             print("JSON-код ответа сервера: \n{}".format(u(req.json())))
@@ -196,7 +197,7 @@ class Account(object):
                         print("Произошла непредвиденная ошибка")
                         # Принудительный выход из цикла
                         break
-            print(self.campaignCosts)
+            self.campaignCosts = collections.OrderedDict(sorted(self.campaignCosts.items()))
         else:
             print("Список кампаний пуст!")
 
@@ -204,24 +205,70 @@ class Account(object):
         wb = Workbook()
         ws = wb.active
         ws.title = "Отчёт YD"
+        for col in range(len(self.costsBody.get("params").get("FieldNames"))):
+            _ = ws.cell(column=col + 1, row=1, value=self.costsBody.get("params").get("FieldNames")[col])
 
+        rowNum, colNum = 2, 1  # Содержание отчёта начинается с 73-го символа
         for i in self.campaignCosts.items():
             rows = [a.start() for a in list(re.finditer('\n', i[1]))]
             cols = [a.start() for a in list(re.finditer('\t', i[1]))]
-            print(rows)
-            print(cols)
             if rows and cols:
-                for n in range(len(rows) + len(cols) - 2):
-                    if rows[0] < cols[0]:
-                        rows.pop(0)
+                index = 73
+                x = 0
+                while x < len(rows) and x < len(cols):
+                    if rows[x] < index:
+                        del rows[x]
+                    elif cols[x] < index:
+                        del cols[x]
                     else:
-                        cols.pop(0)
-                    print(rows)
-                    print(cols)
+                        x += 1
+
+                for n in range(len(rows) + len(cols)):
+                    if not rows:
+                        for col in cols:
+                            if i[1][index:cols[0]].strip().isdigit():
+                                _ = ws.cell(column=colNum, row=rowNum, value=int(i[1][index:cols[0]].strip()))
+                            else:
+                                _ = ws.cell(column=colNum, row=rowNum, value=i[1][index:cols[0]].strip())
+                            index = cols[0]
+                            cols.pop(0)
+                            colNum += 1
+                    elif not cols:
+                        if len(rows) >= 2:
+                            for row in rows:
+                                if i[1][index:rows[0]].strip().isdigit():
+                                    _ = ws.cell(column=colNum, row=rowNum, value=int(i[1][index:rows[0]].strip()))
+                                else:
+                                    _ = ws.cell(column=colNum, row=rowNum, value=i[1][index:rows[0]].strip())
+                                index = rows[0]
+                                rows.pop(0)
+                                rowNum += 1
+                                colNum = 1
+                        else:
+                            print("Отчёт по кампании %s сформирован!" % (i[0]))
+                    else:
+                        if rows[0] < cols[0]:
+                            if i[1][index:rows[0]].strip().isdigit():
+                                _ = ws.cell(column=colNum, row=rowNum, value=int(i[1][index:rows[0]].strip()))
+                            else:
+                                _ = ws.cell(column=colNum, row=rowNum, value=i[1][index:rows[0]].strip())
+                            index = rows[0]
+                            rows.pop(0)
+                            rowNum += 1
+                            colNum = 1
+                        else:
+                            if i[1][index:cols[0]].strip().isdigit():
+                                _ = ws.cell(column=colNum, row=rowNum, value=int(i[1][index:cols[0]].strip()))
+                            else:
+                                _ = ws.cell(column=colNum, row=rowNum, value=i[1][index:cols[0]].strip())
+                            index = cols[0]
+                            cols.pop(0)
+                            colNum += 1
             else:
                 print("Нет списка расходов по кампаниям!")
-
-        #wb.save(filename="asdkljbl.xslx")
+            rowNum += 1
+            colNum += 1
+        wb.save(filename="report.xls")
 
 
 User = Account(token, login)
