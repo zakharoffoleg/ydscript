@@ -21,8 +21,10 @@ else:
         else:
             return x
 
-token = 'AgAAAAAJq2baAAXKPEEN2051SEebhC-XYWWB8kQ'
-login = 'zakharoffffff'
+#token = 'AgAAAAAJq2baAAXKPEEN2051SEebhC-XYWWB8kQ' Токен от zakharoffffff
+token = 'AgAAAAArGY4IAAXAIq_OsOIJXEgIvBjrf0dpP0s' # Токен от macsim.reshetar
+#token = 'AgAAAAAzN9ktAAXAInwzJfwlY0E4taHqCQUC33I' # Токен от za4aroff.ol
+login = 'macsim.reshetar'
 
 
 class Account(object):
@@ -32,8 +34,8 @@ class Account(object):
         self.login = login
 
     campaignList = []
-    CampaignsURL = 'https://api-sandbox.direct.yandex.com/json/v5/campaigns'
-    ReportsURL = 'https://api-sandbox.direct.yandex.com/json/v5/reports'
+    CampaignsURL = 'https://api.direct.yandex.com/json/v5/campaigns'
+    ReportsURL = 'https://api.direct.yandex.com/json/v5/reports'
 
     def getCampaigns(self):
         headers = {"Authorization": "Bearer " + self.token,
