@@ -21,7 +21,7 @@ else:
         else:
             return x
 
-#token = 'AgAAAAAJq2baAAXKPEEN2051SEebhC-XYWWB8kQ' Токен от zakharoffffff
+# token = 'AgAAAAAJq2baAAXKPEEN2051SEebhC-XYWWB8kQ'  # Токен от zakharoffffff
 token = 'AgAAAAArGY4IAAXAIq_OsOIJXEgIvBjrf0dpP0s' # Токен от macsim.reshetar
 #token = 'AgAAAAAzN9ktAAXAInwzJfwlY0E4taHqCQUC33I' # Токен от za4aroff.ol
 login = 'macsim.reshetar'
@@ -207,7 +207,7 @@ class Account(object):
         wb = Workbook()
         ws = wb.active
         ws.title = "Отчёт YD"
-        for col in range(len(self.costsBody.get("params").get("FieldNames"))):
+        for col in range(len(self.costsBody.get("params").get("FieldNames"))):  # Проставляем графы таблицы
             _ = ws.cell(column=col + 1, row=1, value=self.costsBody.get("params").get("FieldNames")[col])
 
         rowNum, colNum = 2, 1  # Содержание отчёта начинается с 73-го символа
@@ -228,18 +228,36 @@ class Account(object):
                 for n in range(len(rows) + len(cols)):
                     if not rows:
                         for col in cols:
-                            if i[1][index:cols[0]].strip().isdigit():
-                                _ = ws.cell(column=colNum, row=rowNum, value=int(i[1][index:cols[0]].strip()))
-                            else:
-                                _ = ws.cell(column=colNum, row=rowNum, value=i[1][index:cols[0]].strip())
-                            index = cols[0]
-                            cols.pop(0)
-                            colNum += 1
+                            if i[1][index:cols[0]].strip():
+                                if i[1][index:cols[0]].strip().isdigit():
+                                    _ = ws.cell(column=colNum, row=rowNum, value=int(i[1][index:cols[0]].strip())
+                                                                                 / 10 ** 6)
+                                else:
+                                    _ = ws.cell(column=colNum, row=rowNum, value=i[1][index:cols[0]].strip())
+                                index = cols[0]
+                                cols.pop(0)
+                                colNum += 1
                     elif not cols:
                         if len(rows) >= 2:
                             for row in rows:
+                                if i[1][index:rows[0]].strip():
+                                    if i[1][index:rows[0]].strip().isdigit():
+                                        _ = ws.cell(column=colNum, row=rowNum, value=int(i[1][index:rows[0]].strip())
+                                                                                     / 10 ** 6)
+                                    else:
+                                        _ = ws.cell(column=colNum, row=rowNum, value=i[1][index:rows[0]].strip())
+                                    index = rows[0]
+                                    rows.pop(0)
+                                    rowNum += 1
+                                    colNum = 1
+                        else:
+                            print("Отчёт по кампании %s сформирован!" % (i[0]))
+                    else:
+                        if rows[0] < cols[0]:
+                            if i[1][index:rows[0]].strip():
                                 if i[1][index:rows[0]].strip().isdigit():
-                                    _ = ws.cell(column=colNum, row=rowNum, value=int(i[1][index:rows[0]].strip()))
+                                    _ = ws.cell(column=colNum, row=rowNum, value=int(i[1][index:rows[0]].strip())
+                                                                                 / 10 ** 6)
                                 else:
                                     _ = ws.cell(column=colNum, row=rowNum, value=i[1][index:rows[0]].strip())
                                 index = rows[0]
@@ -247,29 +265,18 @@ class Account(object):
                                 rowNum += 1
                                 colNum = 1
                         else:
-                            print("Отчёт по кампании %s сформирован!" % (i[0]))
-                    else:
-                        if rows[0] < cols[0]:
-                            if i[1][index:rows[0]].strip().isdigit():
-                                _ = ws.cell(column=colNum, row=rowNum, value=int(i[1][index:rows[0]].strip()))
-                            else:
-                                _ = ws.cell(column=colNum, row=rowNum, value=i[1][index:rows[0]].strip())
-                            index = rows[0]
-                            rows.pop(0)
-                            rowNum += 1
-                            colNum = 1
-                        else:
-                            if i[1][index:cols[0]].strip().isdigit():
-                                _ = ws.cell(column=colNum, row=rowNum, value=int(i[1][index:cols[0]].strip()))
-                            else:
-                                _ = ws.cell(column=colNum, row=rowNum, value=i[1][index:cols[0]].strip())
-                            index = cols[0]
-                            cols.pop(0)
-                            colNum += 1
+                            if i[1][index:cols[0]].strip():
+                                if i[1][index:cols[0]].strip().isdigit():
+                                    _ = ws.cell(column=colNum, row=rowNum, value=int(i[1][index:cols[0]].strip())
+                                                                                 / 10 ** 6)
+                                else:
+                                    _ = ws.cell(column=colNum, row=rowNum, value=i[1][index:cols[0]].strip())
+                                index = cols[0]
+                                cols.pop(0)
+                                colNum += 1
             else:
                 print("Нет списка расходов по кампаниям!")
-            rowNum += 1
-            colNum += 1
+            colNum = 1
         wb.save(filename="report.xls")
 
 
