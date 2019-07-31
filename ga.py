@@ -46,7 +46,6 @@ class Account(object):
         wb = Workbook()
         ws = wb.active
         ws.title = "Отчёт GA"
-        print(report.split(sep='\n'))
         listReport = report.split(sep='\n')
 
         for num, col in enumerate(listReport[1].split(sep=',')):  # Вписываем заголовки таблицы
@@ -55,7 +54,10 @@ class Account(object):
         for m, camp in enumerate(listReport[2:len(listReport) - 2]):
             campaign = camp.split(sep=',')
             for n, field in enumerate(campaign):
-                _ = ws.cell(column=n + 1, row=m + 2, value=field)
+                if field.isdigit():
+                    _ = ws.cell(column=n + 1, row=m + 2, value=int(field))
+                else:
+                    _ = ws.cell(column=n + 1, row=m + 2, value=field)
         wb.save(filename="report.xls")
 
 

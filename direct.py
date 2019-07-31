@@ -69,10 +69,13 @@ class Account(object):
                 print("RequestId: {}".format(result.headers.get("RequestId", False)))
                 print("Информация о баллах: {}".format(result.headers.get("Units", False)))
 
+                x = ''
                 for campaign in result.json()["result"]["Campaigns"]:
                     self.campaignList.append(str(campaign['Id']))
-                    print("Рекламная кампания: {} №{}".format(u(campaign['Name']), campaign['Id']))
-
+                    # print("Рекламная кампания: {} №{}".format(u(campaign['Name']), campaign['Id']))
+                    x += campaign['Name'] + " "
+                    # print("%s, %s" % (campaign['Name'], campaign['Id']))
+                print(x)
                 if result.json()['result'].get('LimitedBy', False):
                     print("Получены не все доступные объекты.")
 
