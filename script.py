@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 import collections
+import io
 import json
 import re
 import sys
 from time import sleep
 
 import requests
+from googleads import adwords
 from openpyxl import Workbook
+
+from clients import callClients
 
 if sys.version_info < (3,):
     def u(x):
@@ -21,13 +25,26 @@ else:
         else:
             return x
 
-# token = 'AgAAAAAJq2baAAXKPEEN2051SEebhC-XYWWB8kQ'  # Токен от zakharoffffff
-token = 'AgAAAAArGY4IAAXAIq_OsOIJXEgIvBjrf0dpP0s' # Токен от macsim.reshetar
-#token = 'AgAAAAAzN9ktAAXAInwzJfwlY0E4taHqCQUC33I' # Токен от za4aroff.ol
 login = 'macsim.reshetar'
+token = 'AgAAAAArGY4IAAXAIq_OsOIJXEgIvBjrf0dpP0s'  # Токен от macsim.reshetar
+# token = 'AgAAAAAJq2baAAXKPEEN2051SEebhC-XYWWB8kQ'  # Токен от zakharoffffff
+# token = 'AgAAAAAzN9ktAAXAInwzJfwlY0E4taHqCQUC33I' # Токен от za4aroff.ol
 
 
-class Account(object):
+# billboadbot tokens
+# access_token: ya29.GltVB1CZMI5EeKtudN4U1Q7UkyLkO0sowci47y3BsGXhPRVB7mvX3dN4QhMNdTjaEktaeP0VuSD91O3Q2wZYhnZ6egTr1uDFQ3OyoRVxy9tXBM6RbfOFedhi73OP
+# refresh_token: 1/Jp1a51XGYcGLy3L_klNsDUU_iZhK6xd8-r3SARfIGEQ
+
+# billboadbottest tokens
+# Access token: ya29.GltVBwf6YydBqXGapPlRWzK9Ohw0l1pxEgGtWCuV2X88e6pcqE3PPrCzqJtNfqPcnx5RW3rBMO74-dS6DwdAIAVvDD2ZcwYwaJT-GEAdYTtw_loepaIV8xA1l_u_
+
+wb = Workbook()
+data = wb.active
+data.title = 'Данные'
+_ = data.cell(column=4, row=1, value='Рекламная система')
+
+
+class YDAccount(object):
 
     def __init__(self, token, login):
         self.token = token
@@ -54,10 +71,10 @@ class Account(object):
             result = requests.post(self.CampaignsURL, jsonBody, headers=headers)
 
             # Отладочная информация
-            #print("Заголовки запроса: {}".format(result.request.headers))
-            #print("Запрос: {}".format(u(result.request.body)))
-            #print("Заголовки ответа: {}".format(result.headers))
-            #print("Ответ: {}".format(u(result.text)))
+            # print("Заголовки запроса: {}".format(result.request.headers))
+            # print("Запрос: {}".format(u(result.request.body)))
+            # print("Заголовки ответа: {}".format(result.headers))
+            # print("Ответ: {}".format(u(result.text)))
 
             # Обработка запроса
             if result.status_code != 200 or result.json().get("error", False):
@@ -117,12 +134,12 @@ class Account(object):
                             }],
                         },
                         "FieldNames": [
-                            #"Date",
+                            # "Date",
                             "CampaignId",
                             "CampaignName",
-                            #"LocationOfPresenceName",
-                            #"Impressions",
-                            #"Clicks",
+                            # "LocationOfPresenceName",
+                            # "Impressions",
+                            # "Clicks",
                             "Cost"
                         ],
                         "ReportName": u("НАЗВАНИЕ_ОТЧЕТА"),
@@ -210,11 +227,11 @@ class Account(object):
 
     def exportToExcel(self):
         self.getCosts()
-        wb = Workbook()
-        ws = wb.active
+        # wb = Workbook()
+        # ws = wb.active
         # ws.title = "Отчёт YD"
         for col in range(len(self.costsBody.get("params").get("FieldNames"))):  # Проставляем графы таблицы
-            _ = ws.cell(column=col + 1, row=1, value=self.costsBody.get("params").get("FieldNames")[col])
+            _ = data.cell(column=col + 1, row=1, value=self.costsBody.get("params").get("FieldNames")[col])
 
         rowNum, colNum = 2, 1  # Содержание отчёта начинается с 73-го символа
         for i in self.campaignCosts.items():
@@ -236,10 +253,10 @@ class Account(object):
                         for col in cols:
                             if i[1][index:cols[0]].strip():
                                 if i[1][index:cols[0]].strip().isdigit():
-                                    _ = ws.cell(column=colNum, row=rowNum, value=int(i[1][index:cols[0]].strip())
-                                                                                 / 10 ** 6)
+                                    _ = data.cell(column=colNum, row=rowNum, value=int(i[1][index:cols[0]].strip())
+                                                                                   / 10 ** 6)
                                 else:
-                                    _ = ws.cell(column=colNum, row=rowNum, value=i[1][index:cols[0]].strip())
+                                    _ = data.cell(column=colNum, row=rowNum, value=i[1][index:cols[0]].strip())
                                 index = cols[0]
                                 cols.pop(0)
                                 colNum += 1
@@ -248,10 +265,10 @@ class Account(object):
                             for row in rows:
                                 if i[1][index:rows[0]].strip():
                                     if i[1][index:rows[0]].strip().isdigit():
-                                        _ = ws.cell(column=colNum, row=rowNum, value=int(i[1][index:rows[0]].strip())
-                                                                                     / 10 ** 6)
+                                        _ = data.cell(column=colNum, row=rowNum, value=int(i[1][index:rows[0]].strip())
+                                                                                       / 10 ** 6)
                                     else:
-                                        _ = ws.cell(column=colNum, row=rowNum, value=i[1][index:rows[0]].strip())
+                                        _ = data.cell(column=colNum, row=rowNum, value=i[1][index:rows[0]].strip())
                                     index = rows[0]
                                     rows.pop(0)
                                     rowNum += 1
@@ -262,10 +279,10 @@ class Account(object):
                         if rows[0] < cols[0]:
                             if i[1][index:rows[0]].strip():
                                 if i[1][index:rows[0]].strip().isdigit():
-                                    _ = ws.cell(column=colNum, row=rowNum, value=int(i[1][index:rows[0]].strip())
-                                                                                 / 10 ** 6)
+                                    _ = data.cell(column=colNum, row=rowNum, value=int(i[1][index:rows[0]].strip())
+                                                                                   / 10 ** 6)
                                 else:
-                                    _ = ws.cell(column=colNum, row=rowNum, value=i[1][index:rows[0]].strip())
+                                    _ = data.cell(column=colNum, row=rowNum, value=i[1][index:rows[0]].strip())
                                 index = rows[0]
                                 rows.pop(0)
                                 rowNum += 1
@@ -273,19 +290,95 @@ class Account(object):
                         else:
                             if i[1][index:cols[0]].strip():
                                 if i[1][index:cols[0]].strip().isdigit():
-                                    _ = ws.cell(column=colNum, row=rowNum, value=int(i[1][index:cols[0]].strip())
-                                                                                 / 10 ** 6)
+                                    _ = data.cell(column=colNum, row=rowNum, value=int(i[1][index:cols[0]].strip())
+                                                                                   / 10 ** 6)
                                 else:
-                                    _ = ws.cell(column=colNum, row=rowNum, value=i[1][index:cols[0]].strip())
+                                    _ = data.cell(column=colNum, row=rowNum, value=i[1][index:cols[0]].strip())
                                 index = cols[0]
                                 cols.pop(0)
                                 colNum += 1
+
             else:
                 print("Нет списка расходов по кампаниям!")
             colNum = 1
+            _ = data.cell(column=4, row=rowNum, value='YD')
         # wb.save(filename="report.xls")
 
 
-YDUser = Account(token, login)
+class GAAccount(object):
 
-YDUser.exportToExcel()
+    def __init__(self, client):
+        self.client = client
+
+    def getCampaignCosts(self):
+        # Initialize appropriate service.
+        report_downloader = self.client.GetReportDownloader(version='v201809')
+
+        # Create report query.
+        report_query = (adwords.ReportQueryBuilder()
+                        .Select('CampaignId', 'CampaignName', 'Cost')
+                        .From(
+            'CAMPAIGN_PERFORMANCE_REPORT')  # https://developers.google.com/adwords/api/docs/appendix/reports
+                        # .Where('Status').In('ENABLED', 'PAUSED')
+                        .During('LAST_7_DAYS')
+                        .Build())
+
+        # You can provide a file object to write the output to. For this
+        # demonstration we use sys.stdout to write the report to the screen.
+
+        with io.StringIO() as f:
+            report_downloader.DownloadReportWithAwql(
+                report_query, 'CSV', f, skip_report_header=False,
+                skip_column_header=False, skip_report_summary=False,
+                include_zero_impressions=True)
+            # f.close()
+            return f.getvalue()
+
+    def exportToExcel(self):
+        report = self.getCampaignCosts()
+        # gasheet = wb.create_sheet(title='Отчёт GA')
+        # wb = Workbook()
+        # ws = wb.active
+        # ws.title = "Отчёт GA"
+        listReport = report.split(sep='\n')
+
+        # for num, col in enumerate(listReport[1].split(sep=',')):  # Вписываем заголовки таблицы
+        #    _ = gasheet.cell(column=num + 1, row=1, value=col)
+
+        for m, camp in enumerate(listReport[2:len(listReport) - 2]):
+            campaign = camp.split(sep=',')
+            for n, field in enumerate(campaign):
+                if field.isdigit():
+                    _ = data.cell(column=n + 1, row=data.max_row + m,
+                                  value=int(field))  # ws.max_row - потенциально косяк, если кампаний больше 1
+                else:
+                    _ = data.cell(column=n + 1, row=data.max_row + m, value=field)
+            _ = data.cell(column=4, row=data.max_row + m, value='GA')
+        # wb.save(filename="report.xls")
+
+
+YDUser = YDAccount(token, login)
+# YDUser.exportToExcel()
+
+adwords_client = adwords.AdWordsClient.LoadFromStorage(path='googleads.yaml')
+GAUser = GAAccount(adwords_client)
+
+
+# GAUser.exportToExcel()
+
+
+def exportCosts():
+    YDUser.exportToExcel()
+    GAUser.exportToExcel()
+
+
+def sumCosts():
+    report = wb.create_sheet('Отчёт', 0)
+    # report = wb.active
+    for n, client in enumerate(callClients):
+        _ = report.cell(column=1, row=n + 1, value=client)
+    wb.save(filename="report.xls")
+
+
+exportCosts()
+sumCosts()

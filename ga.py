@@ -64,5 +64,5 @@ class Account(object):
 if __name__ == '__main__':
     # Initialize client object.
     adwords_client = adwords.AdWordsClient.LoadFromStorage(path='googleads.yaml')
-    User = Account(adwords_client)
-    User.exportToExcel()
+    GAUser = Account(adwords_client)
+    GAUser.exportToExcel()
