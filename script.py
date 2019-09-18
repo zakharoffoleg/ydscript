@@ -76,8 +76,8 @@ class YDAccount(object):
         self.costsBody = {
             "params": {
                 "SelectionCriteria": {
-                    "DateFrom": "2019-07-01",
-                    "DateTo": "2019-07-31",
+                    "DateFrom": "2019-09-01",
+                    "DateTo": "2019-09-16",
                     "Filter": [{
                         "Field": "Impressions",
                         "Operator": "GREATER_THAN",
@@ -88,12 +88,13 @@ class YDAccount(object):
                     # "Date",
                     "CampaignId",
                     "CampaignName",
+                    "AdGroupName",
                     # "LocationOfPresenceName",
                     # "Impressions",
                     # "Clicks",
                     "Cost"
                 ],
-                "ReportName": u("НАЗВАНИЕ_ОТЧЕТА"),
+                "ReportName": u("НАЗВАНИЕ_ОТЧЕТA"),
                 "ReportType": "CUSTOM_REPORT",
                 "DateRangeType": "CUSTOM_DATE",
                 "Format": "TSV",
@@ -204,9 +205,9 @@ class GAAccount(object):
 
         # Create report query.
         report_query = (adwords.ReportQueryBuilder()
-                        .Select('CampaignId', 'CampaignName', 'Cost')
+                        .Select('CampaignId', 'CampaignName', 'AdGroupId', 'AdGroupName' 'Cost')
                         .From(
-            'CAMPAIGN_PERFORMANCE_REPORT')  # https://developers.google.com/adwords/api/docs/appendix/reports
+            'ADGROUP_PERFORMANCE_REPORT')  # https://developers.google.com/adwords/api/docs/appendix/reports
                         # .Where('Status').In('ENABLED', 'PAUSED')
                         .During('LAST_7_DAYS')
                         .Build())
@@ -245,14 +246,14 @@ def getCosts():
     for i in YDAuth.items():
         YDUser = YDAccount(i[1], i[0])
         YDUser.exportToExcel()
-    GAUser.exportToExcel()
+    # GAUser.exportToExcel()
 
 
 def sumCosts():
     # wb = openpyxl.load_workbook('C:/Users/KK/PycharmProjects/ydscript/report.xlsx')
     # report = wb.active
     report = wb.create_sheet('Отчёт', 0)
-    for n, field in enumerate(['Клиент', 'Сумма']):  # Вводим поля таблицы
+    for n, field in enumerate(['Кампания', 'Группа', 'Сумма']):  # Вводим поля таблицы
         _ = report.cell(column=1 + n, row=1, value=field)
     for n, client in enumerate(callClients):  # Вводим список клиентов
         _ = report.cell(column=1, row=n + 2, value=client)
@@ -272,6 +273,6 @@ def sumCosts():
 
 
 getCosts()
-sumCosts()
+#sumCosts()
 
 print("\n--- %s seconds ---" % (time.time() - start_time))
