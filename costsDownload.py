@@ -92,7 +92,7 @@ class YDAccount(object):
                     "Clicks",
                     "Cost"
                 ],
-                "ReportName": u("НАЗВАНИЕ_OТЧЕТA"),
+                "ReportName": u("НАЗВAНИЕ_OТЧЕТA"),
                 "ReportType": "CUSTOM_REPORT",
                 "DateRangeType": "CUSTOM_DATE",
                 "Format": "TSV",
@@ -190,6 +190,7 @@ class YDAccount(object):
                     _ = data.cell(column=n + 1, row=maxRow, value=field)
             maxRow += 1
         wb.save(filename="report.xlsx")
+        return
 
 
 class GAAccount(object):
@@ -235,6 +236,7 @@ class GAAccount(object):
                     _ = data.cell(column=n + 1, row=maxRow, value=field)
             maxRow += 1
         wb.save(filename="report.xlsx")
+
 
 adwords_client = adwords.AdWordsClient.LoadFromStorage(path='googleads.yaml')
 GAUser = GAAccount(adwords_client)

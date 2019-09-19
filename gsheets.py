@@ -8,15 +8,12 @@ from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
-client_id = "62231582389-ag1o5pu5aj7o3a0stamts99hqvp6e2m5.apps.googleusercontent.com"
-secret = "SYdg_qzIbUE61BZlrb6ejrdW"
-
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
 # The ID and range of a sample spreadsheet.
 spreadsheet_id = '1zx1Tdmmpmrui6qVVljwvqzHEmXzI5TOu3S4OFjeTYm0'
-range_name = 'Выгрузка!A:I'
+range_name = 'Выгрузка!A:J'
 valueInputOption = "USER_ENTERED"
 responseValueRenderOption = 'UNFORMATTED_VALUE'
 responseDateTimeRenderOption = 'FORMATTED_STRING'
@@ -67,7 +64,7 @@ def uploadData():
 
     values = exportValues()
     body = {
-        'range': "Выгрузка!A:I",
+        'range': "Выгрузка!A:J",
         'majorDimension': 'ROWS',
         'values': values
     }
