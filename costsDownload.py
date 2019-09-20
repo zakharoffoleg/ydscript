@@ -75,7 +75,7 @@ class YDAccount(object):
             "params": {
                 "SelectionCriteria": {
                     "DateFrom": "2019-09-01",  # Первый день месяца
-                    "DateTo": "2019-09-18",  # Вчера
+                    "DateTo": "2019-09-19",  # Вчера
                     "Filter": [{
                         "Field": "Impressions",
                         "Operator": "GREATER_THAN",
