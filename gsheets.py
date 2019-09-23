@@ -77,5 +77,5 @@ def uploadData():
     print('{0} cells updated.'.format(result.get('updatedCells')))
 
 
-# uploadData()
-exportValues()
+uploadData()
+# exportValues()

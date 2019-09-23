@@ -49,7 +49,7 @@ def saveConversions(login_list, clientTokens, directIDs, metrics, startDate, end
                 _ = report.cell(row=index + maxRow + 1, column=3, value=int(item['metrics'][0]))
                 print("Найдены конверсии в кампании %s, в группе %s в количестве: %s." % \
                       (item['dimensions'][1]['name'], item['dimensions'][2]['name'], int(item['metrics'][0])))
-        wb.save(filename="report.xlsx")
+    wb.save(filename="report.xlsx")
 
 
 def connectConversionsWithCampaigns():  #Добавляем конверсии в таблицу с данными
