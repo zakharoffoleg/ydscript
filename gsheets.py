@@ -14,7 +14,7 @@ api_key = 'AIzaSyDshx00HUvXuZZ35eBccAJWJno3GJ9jnMM'
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
 # The ID and range of a sample spreadsheet.
-spreadsheet_id = '1zx1Tdmmpmrui6qVVljwvqzHEmXzI5TOu3S4OFjeTYm0'
+spreadsheet_id = '17tJtvDILPhsSkUHPo8zoNa9VcMKCHrNq7IpaKKYv3HQ'
 range_name = 'Выгрузка!A:J'
 valueInputOption = "USER_ENTERED"
 responseValueRenderOption = 'UNFORMATTED_VALUE'

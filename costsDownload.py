@@ -3,6 +3,7 @@ import io
 import json
 import sys
 import time
+from operator import itemgetter
 from time import sleep
 
 import requests
@@ -87,12 +88,13 @@ class YDAccount(object):
                     "CampaignId",
                     "CampaignName",
                     "AdGroupName",
+                    "AdGroupId",
                     # "LocationOfPresenceName",
                     "Impressions",
                     "Clicks",
                     "Cost"
                 ],
-                "ReportName": u("НАЗВAНИЕ_OТЧЕТA"),
+                "ReportName": u("НA3ВAНИE_OТЧЕТA"),
                 "ReportType": "CUSTOM_REPORT",
                 "DateRangeType": "CUSTOM_DATE",
                 "Format": "TSV",
@@ -178,12 +180,16 @@ class YDAccount(object):
         for col in range(len(self.costsBody.get("params").get("FieldNames"))):  # Проставляем графы таблицы
             _ = data.cell(column=col + 1, row=1, value=self.costsBody.get("params").get("FieldNames")[col])
 
-        rows = self.responseReport.split('\n')
+        respond = self.responseReport.split('\n')
+        rows = []
+        for row in respond:
+            rows.append(row.split('\t'))
+
+        sortedRows = sorted(rows[2:-2], key=itemgetter(3))
         maxRow = data.max_row + 1
-        for m, camp in enumerate(rows[2:len(rows) - 2]):
-            campaign = camp.split(sep='\t')
-            print('Данные кампании %s получены.' % campaign[0])
-            for n, field in enumerate(campaign):
+        for m, camp in enumerate(sortedRows):
+            print('Данные кампании %s получены.' % sortedRows[m][0])
+            for n, field in enumerate(sortedRows[m]):
                 if field.isdigit():
                     _ = data.cell(column=n + 1, row=maxRow, value=float(field.replace('.', ',')))
                 else:
