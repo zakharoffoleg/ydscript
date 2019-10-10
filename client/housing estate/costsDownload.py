@@ -29,7 +29,6 @@ else:
 YDAuth = {'za4aroff.ol': 'AgAAAAAzN9ktAAXAInwzJfwlY0E4taHqCQUC33I',
           'macsim.reshetar': 'AgAAAAArGY4IAAXAIq_OsOIJXEgIvBjrf0dpP0s'}
 
-
 # token = 'AgAAAAAzN9ktAAXAInwzJfwlY0E4taHqCQUC33I' # Токен от za4aroff.ol
 
 
@@ -75,8 +74,8 @@ class YDAccount(object):
         self.costsBody = {
             "params": {
                 "SelectionCriteria": {
-                    "DateFrom": "2019-09-01",  # Первый день месяца
-                    "DateTo": "2019-09-23",  # Вчера
+                    "DateFrom": "2019-10-01",  # Первый день месяца
+                    "DateTo": "2019-10-09",  # Вчера
                     "Filter": [{
                         "Field": "Impressions",
                         "Operator": "GREATER_THAN",
@@ -94,7 +93,7 @@ class YDAccount(object):
                     "Clicks",
                     "Cost"
                 ],
-                "ReportName": u("НA3ВAНИE_OТЧЕТA"),
+                "ReportName": u("HAЗВAНИЕ_ОТЧЕТA"),
                 "ReportType": "CUSTOM_REPORT",
                 "DateRangeType": "CUSTOM_DATE",
                 "Format": "TSV",
@@ -279,6 +278,6 @@ def sumCosts():  # Может сломаться из-за новых полей
 
 
 getCosts()
-#sumCosts()
+# sumCosts()
 
 print("\n--- %s seconds ---" % (time.time() - start_time))

@@ -9,18 +9,15 @@ start_time = time.time()
 
 wb = openpyxl.load_workbook('report.xlsx')
 
-YDAuth = {'za4aroff.ol': 'AgAAAAAzN9ktAAXAInwzJfwlY0E4taHqCQUC33I',
-          'macsim.reshetar': 'AgAAAAArGY4IAAXAIq_OsOIJXEgIvBjrf0dpP0s'}
-
-direct_client_logins = ["za4aroff.ol", "za4aroff.ol", "macsim.reshetar"]  # НП СПБ, НП МСК, 1001
+direct_client_logins = ["za4aroff.ol", "za4aroff.ol", "macsim.reshetar", "za4aroff.ol"]  # НП СПБ, НП МСК, 1001, Brand
 clientTokens = {"za4aroff.ol": "AgAAAAAzN9ktAAXAInwzJfwlY0E4taHqCQUC33I",
                 "macsim.reshetar": "AgAAAAArGY4IAAXAIq_OsOIJXEgIvBjrf0dpP0s"}
-date1 = "2019-09-01"
-date2 = "2019-09-23"
-ids = ["35656455", "37340325", "42890799"]  # НП СПБ, НП МСК, 1001
-metrics = ["ym:s:goal39547444visits", "ym:s:goal39545641visits", "ym:s:goal44259842visits"]  # НП СПБ, НП МСК, 1001
+date1 = "2019-10-01"
+date2 = "2019-10-09"
+ids = ["35656455", "37340325", "42890799", "54227233"]
+metrics = ["ym:s:goal39547444visits", "ym:s:goal39545641visits", "ym:s:goal44259842visits", "ym:s:goal52718371visits"]
 dimensions = "ym:s:goal,ym:s:lastsignDirectClickOrder,ym:s:lastsignDirectBannerGroup"
-filters = ["ym:s:goal==39547444", "ym:s:goal==39545641", "ym:s:goal==44259842"]
+filters = ["ym:s:goal==39547444", "ym:s:goal==39545641", "ym:s:goal==44259842", "ym:s:goal==52718371"]
 url = "https://api-metrika.yandex.net/stat/v1/data"
 
 
@@ -43,6 +40,7 @@ def saveConversions(login_list, clientTokens, directIDs, metrics, startDate, end
         jsonReport = json.loads(req.text)
 
         maxRow = report.max_row
+        print(jsonReport)
         print(jsonReport["data"])
         for index, item in enumerate(jsonReport["data"]):
             if item['dimensions'][1]['name'] != "Other campaigns":
@@ -87,7 +85,7 @@ def connectConversionsWithCampaigns():  # Добавляем конверсии 
                     dataList[dataRow].append(str(col.value))
             dataRow += 1
 
-    print(dataList)
+    # print(dataList)
     sortedConversions = sorted(dataList[1:], key=itemgetter(2))
     maxCol = conversions.max_column
     for n, row in enumerate(sortedConversions):
