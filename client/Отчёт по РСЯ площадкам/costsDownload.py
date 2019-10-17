@@ -84,10 +84,10 @@ class YDAccount(object):
                 },
                 "FieldNames": [
                     # "Date",
-                    # "Placement",
-                    "CampaignName",
-                    "AdGroupName",
-                    "AdGroupId",
+                    "Placement",
+                    # "CampaignName",
+                    # "AdGroupName",
+                    # "AdGroupId",
                     # "LocationOfPresenceName",
                     "Impressions",
                     "Clicks",
@@ -187,7 +187,7 @@ class YDAccount(object):
         sortedRows = sorted(rows[2:-2], key=itemgetter(3))
         maxRow = data.max_row + 1
         for m, camp in enumerate(sortedRows):
-            print('Данные кампании %s получены.' % sortedRows[m][0])
+            print('Данные площадки %s получены.' % sortedRows[m][0])
             for n, field in enumerate(sortedRows[m]):
                 if field.isdigit():
                     _ = data.cell(column=n + 1, row=maxRow, value=float(field.replace('.', ',')))
